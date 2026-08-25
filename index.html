@@ -95,6 +95,28 @@
       canvas.style.maxHeight = "600px";
     }
 
+    /* SCALING */
+    function updateGameScale() {
+      const container = document.querySelector("#unity-container");
+      if (!container) return;
+      const currentWindowWidth = window.innerWidth;
+      // Scale only if screen is narrower than the game's native 960px width
+      if (currentWindowWidth < 960) {
+        const scaleFactor = (currentWindowWidth / 960) * 0.95;
+        // Apply the scaling factor directly to element container matrix
+        container.style.transform = `translate(-50%, -50%) scale(${scaleFactor})`;
+      } else {
+        // Reset to normal 1:1 scale on large desktop layouts
+        container.style.transform = 'translate(-50%, -50%) scale(1)';
+      }
+    }
+    // Run the scaling math immediately when the page loads
+    window.addEventListener('load', updateGameScale);
+    // Re-calculate the scale automatically if the phone orientation changes
+    window.addEventListener('resize', updateGameScale);
+
+
+    /* LOADING */
     document.querySelector("#unity-loading-bar").style.display = "block";
 
     var script = document.createElement("script");
@@ -107,23 +129,6 @@
         document.querySelector("#unity-fullscreen-button").onclick = () => {
           unityInstance.SetFullscreen(1);
         };
-        // INTERCEPT UNITY'S QUIT
-        unityInstance.Quit = function () {
-
-          // 1. Kick the browser out of fullscreen if it's actively full screen
-          if (document.fullscreenElement || document.webkitFullscreenElement) {
-            if (document.exitFullscreen) {
-              document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-              document.webkitExitFullscreen(); // Safari/iOS mobile fallback
-            }
-          }
-          // 2. Reload the game immediately
-          setTimeout(() => {
-            window.location.reload();
-          }, 100);
-        };
-
       }).catch((message) => {
         alert(message);
       });
